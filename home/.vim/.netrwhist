@@ -1,0 +1,8 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =6
+let g:netrw_dirhist_1='/data/users/pallotron/fbcode'
+let g:netrw_dirhist_2='/data/users/pallotron/www-git/flib/intern/site/web/scuba/views/baseline'
+let g:netrw_dirhist_3='/data/users/pallotron/fbcode/neteng/net_latency/scheduler'
+let g:netrw_dirhist_4='/data/users/pallotron/fbcode/datainfra/presto'
+let g:netrw_dirhist_5='/data/users/pallotron/www-git/flib/intern/site/web/scuba/presenters/datasets/__tests__'
+let g:netrw_dirhist_6='/Users/pallotron/.fontconfig'

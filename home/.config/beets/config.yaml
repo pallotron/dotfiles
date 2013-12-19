@@ -1,0 +1,8 @@
+# Automatically migrated from legacy .beetsconfig.
+
+directory: ~/Music/beets
+library: ~/.beetsdb.blb
+plugins: lastgenre lyrics fetchart scrub embedart chroma missing info
+
+#import:
+#    incremental: true

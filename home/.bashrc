@@ -2,8 +2,6 @@
 
 # User specific aliases and functions
 
-source ~/.git-prompt.sh
-
 if [ -z "$PS1" ]; then
   return
 fi
@@ -13,20 +11,35 @@ if [ -f /etc/bashrc ]; then
   . /etc/bashrc
 fi
 
+if [ -f ~/.bashrc_fb ]; then
+  source ~/.bashrc_fb
+fi
+
+# ssh agent
+SSHPROFILE=~/.ssh_agent_state_${HOSTNAME}
+if [[ -z "${SSH_AGENT_PID}" ]] || ! (ps -p "${SSH_AGENT_PID}" -o user,comm | grep `getent passwd $(whoami) | cut -d: -f3` | grep -q " ssh-agent\ *$")
+then
+  ssh-agent -s > "${SSHPROFILE}"
+  .  "${SSHPROFILE}" > /dev/null
+  ssh-add
+fi
 
 # prompt
 red="\033[1;31m"
 norm="\033[0;39m"
 yellow="\033[1;33m"
 green="\033[0;32m"
+
 function __exitcode() {
   local EXIT="$?"
+  local date=$(date +%H:%M:%S)
   if [ $EXIT != 0 ]; then
-    echo -e "${red}[Exit code $EXIT]${norm}"
+    echo -e "${red}[Exit code $EXIT @ ${date}]${norm}"
   else
-    echo -e "${green}[Exit code $EXIT]${norm}"
+    echo -e "${green}[Exit code $EXIT @ ${date}]${norm}"
   fi
 }
+[[ -f ~/.git-prompt.sh ]] && source ~/.git-prompt.sh
 export PS1='$(__exitcode)\n\[\033[01;33m\]\u@\H\[\033[00m\]:\[\033[01;31m\]$(__git_ps1 "(%s) ")\w\[\033[00m\]\n\$ '
 
 export EDITOR=vim

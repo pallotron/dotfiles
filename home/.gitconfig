@@ -1,0 +1,11 @@
+[user]
+  name = Angelo Failla
+  email = pallotron@fb.com
+[color]
+  diff = auto
+[merge]
+  tool = vimdiff
+[core]
+  editor = vim
+[diff]
+  tool = vimdiff

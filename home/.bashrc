@@ -40,8 +40,11 @@ function __exitcode() {
   fi
 }
 [[ -f ~/.git-prompt.sh ]] && source ~/.git-prompt.sh
+
+# share history across ALL terminal in real time
 shopt -s histappend
 export PROMPT_COMMAND="history -a; history -n; $PROMPT_COMMAND"
+
 export PS1='$(__exitcode)\n\[\033[01;33m\]\u@\H\[\033[00m\]:\[\033[01;31m\]$(__git_ps1 "(%s) ")\w\[\033[00m\]\n\$ '
 
 export EDITOR=vim

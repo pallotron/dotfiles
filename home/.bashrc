@@ -15,13 +15,18 @@ if [ -f ~/.bashrc_fb ]; then
   source ~/.bashrc_fb
 fi
 
-# ssh agent
-SSHPROFILE=~/.ssh_agent_state_${HOSTNAME}
-if [[ -z "${SSH_AGENT_PID}" ]] || ! (ps -p "${SSH_AGENT_PID}" -o user,comm | grep `getent passwd $(whoami) | cut -d: -f3` | grep -q " ssh-agent\ *$")
+[[ -f ~/.config/pass.bash-completion ]] && source ~/.config/pass.bash-completion
+
+if hostname | grep ^dev > /dev/null
 then
-  ssh-agent -s > "${SSHPROFILE}"
-  .  "${SSHPROFILE}" > /dev/null
-  ssh-add
+  # ssh agent only if work env
+  SSHPROFILE=~/.ssh_agent_state_${HOSTNAME}
+  if [[ -z "${SSH_AGENT_PID}" ]] || ! (ps -p "${SSH_AGENT_PID}" -o user,comm | grep `getent passwd $(whoami) | cut -d: -f3` | grep -q " ssh-agent\ *$")
+  then
+    ssh-agent -s > "${SSHPROFILE}"
+    .  "${SSHPROFILE}" > /dev/null
+    ssh-add
+  fi
 fi
 
 # prompt

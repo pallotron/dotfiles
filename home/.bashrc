@@ -15,7 +15,7 @@ if [ -f ~/.bashrc_fb ]; then
   source ~/.bashrc_fb
 fi
 
-[[ -f ~/.config/pass.bash-completion ]] && source ~/.config/pass.bash-completion
+[[ -f ~/.pass.bash-completion ]] && source ~/.pass.bash-completion
 
 if hostname | grep ^dev > /dev/null
 then

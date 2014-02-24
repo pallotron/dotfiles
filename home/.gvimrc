@@ -1,5 +1,4 @@
-color codeschool
-set guifont=Monaco:h12
+set guifont=Menlo:h12
 let g:NERDTreeWinPos = "right"
 set guioptions-=T " Removes top toolbar
 set guioptions-=r " Removes right hand scroll bar

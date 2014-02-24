@@ -1,11 +1,18 @@
-set autoread
+:syntax on
+if filereadable($ADMIN_SCRIPTS . "/master.vimrc")
+  execute 'source ' . $ADMIN_SCRIPTS . "/master.vimrc"
+  source /home/engshare/admin/scripts/vim/biggrep.vim
+endif
+
+execute pathogen#infect()
+
+se autoread
 set ttyfast
 set copyindent
 set mouse=a
 set paste
 set lazyredraw
 
-:syntax on
 
 set expandtab
 
@@ -67,7 +74,8 @@ nnoremap <Leader>8 :call <SID>ToggleColorColumn()<cr>
 " Ctrl-C/N to create new tab and jump to next tab "
 " (this should roughly match the 'screen' keys Ctrl-A+C and Ctrl-A+N) "
 map <C-c> :tabe<CR>
-map <C-n> :tabn<CR>
+map <C-m> :tabn<CR>
+map <C-n> :tabp<CR>
 
 " shows error window
 map <C-e> :cope<CR>
@@ -121,5 +129,17 @@ map <C-m> <C-w>_
 
 autocmd FileType make setlocal noexpandtab
 
+set background=dark
 set t_Co=256
-colorscheme pallotron
+"let g:solarized_termcolors=256
+colorscheme solarized
+
+" powerline plugin
+python from powerline.vim import setup as powerline_setup
+python powerline_setup()
+python del powerline_setup
+
+" ctrlp plugin
+set runtimepath^=~/.vim/bundle/ctrlp.vim
+:helptags ~/.vim/bundle/ctrlp.vim/doc
+let g:ctrlp_working_path_mode = 'a'

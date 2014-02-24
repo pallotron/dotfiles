@@ -57,3 +57,4 @@ export LESS=' -R '
 export HISTSIZE=130000
 export SAVEHIST=130000
 alias blah='f() { b=${1:-blah}; git branch $b master && git reset --hard HEAD^ && git checkout $b; }; f'
+

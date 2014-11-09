@@ -58,3 +58,11 @@ export HISTSIZE=130000
 export SAVEHIST=130000
 alias blah='f() { b=${1:-blah}; git branch $b master && git reset --hard HEAD^ && git checkout $b; }; f'
 
+pgrep gpg-agent >/dev/null
+if [ $? -eq 0 ]; then
+  . "${HOME}/.gpg-agent-info"
+  export GPG_AGENT_INFO
+  export SSH_AUTH_SOCK
+else
+  eval $(gpg-agent --daemon --write-env-file "${HOME}/.gpg-agent-info") 
+fi

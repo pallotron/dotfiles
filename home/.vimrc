@@ -1,8 +1,4 @@
 :syntax on
-if filereadable($ADMIN_SCRIPTS . "/master.vimrc")
-  execute 'source ' . $ADMIN_SCRIPTS . "/master.vimrc"
-  source /home/engshare/admin/scripts/vim/biggrep.vim
-endif
 
 execute pathogen#infect()
 
@@ -10,10 +6,8 @@ se autoread
 set ttyfast
 set copyindent
 set mouse=a
-set paste
 set lazyredraw
-
-
+set paste
 set expandtab
 
 filetype on
@@ -27,21 +21,19 @@ filetype plugin indent on
 let &t_SI = "\<Esc>]50;CursorShape=1\x7"
 let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 
-au BufRead,BufNewFile *.thrift set filetype=thrift
-au! Syntax thrift source ~/.vim/thrift.vim
 au BufRead,BufNewFile * set tabstop=2 shiftwidth=2
-au BufRead,BufNewFile *.phpt set filetype=php wm=2 tw=80  
-au BufRead,BufNewFile *.py set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80  
-au BufRead,BufNewFile *.tw set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80  
-au BufRead,BufNewFile *.cconf set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80  
-au BufRead,BufNewFile *.cinc set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80  
-au BufRead,BufNewFile TARGETS set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80 
-au BufRead,BufNewFile *.rb set tabstop=2 shiftwidth=2 wm=2 tw=80  
-au BufRead,BufNewFile *.php set tabstop=2 shiftwidth=2 wm=2 tw=80  
-au BufRead,BufNewFile *.c set tabstop=2 shiftwidth=2 wm=2 tw=80  
-au BufRead,BufNewFile *.h set tabstop=2 shiftwidth=2 wm=2 tw=80  
-au BufRead,BufNewFile *.cpp set tabstop=2 shiftwidth=2 wm=2 tw=80  
-au BufRead,BufNewFile *.md set filetype=markdown wm=2 tw=80  
+au BufRead,BufNewFile *.phpt set filetype=php wm=2 tw=80
+au BufRead,BufNewFile *.py set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
+au BufRead,BufNewFile *.tw set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
+au BufRead,BufNewFile *.cconf set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
+au BufRead,BufNewFile *.cinc set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
+au BufRead,BufNewFile TARGETS set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
+au BufRead,BufNewFile *.rb set tabstop=2 shiftwidth=2 wm=2 tw=80
+au BufRead,BufNewFile *.php set tabstop=2 shiftwidth=2 wm=2 tw=80
+au BufRead,BufNewFile *.c set tabstop=2 shiftwidth=2 wm=2 tw=80
+au BufRead,BufNewFile *.h set tabstop=2 shiftwidth=2 wm=2 tw=80
+au BufRead,BufNewFile *.cpp set tabstop=2 shiftwidth=2 wm=2 tw=80
+au BufRead,BufNewFile *.md set filetype=markdown wm=2 tw=80
 
 "autocmd VimEnter * NERDTree
 autocmd VimEnter * wincmd p
@@ -73,22 +65,9 @@ nnoremap <Leader>8 :call <SID>ToggleColorColumn()<cr>
 
 " Ctrl-C/N to create new tab and jump to next tab "
 " (this should roughly match the 'screen' keys Ctrl-A+C and Ctrl-A+N) "
-map <C-c> :tabe<CR>
-map <C-m> :tabn<CR>
-map <C-n> :tabp<CR>
-
-" shows error window
-map <C-e> :cope<CR>
-
-" relativenumber togger
-function! NumberToggle()
-  if(&relativenumber == 1)
-    set number
-  else
-    set relativenumber
-  endif
-endfunc
-nnoremap <C-o> :call NumberToggle()<cr>
+map <C-c>c :tabe<CR>
+map <C-c>o :tabp<CR>
+map <C-c>p :tabn<CR>
 
 " always show status line with file name and position "
 set laststatus=2 showmode
@@ -120,26 +99,42 @@ autocmd FileType c,cabal,cpp,haskell,javascript,php,python,readme,text
 " could make it just for php but i'm not sure it's even needed
 match Error '\t'
 
-" make split windows easier to navigate
-map <C-j> <C-w>j
-map <C-k> <C-w>k
-map <C-h> <C-w>h
-map <C-l> <C-w>l
-map <C-m> <C-w>_
-
 autocmd FileType make setlocal noexpandtab
-
-set background=dark
-set t_Co=256
-"let g:solarized_termcolors=256
-colorscheme solarized
-
-" powerline plugin
-python from powerline.vim import setup as powerline_setup
-python powerline_setup()
-python del powerline_setup
 
 " ctrlp plugin
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 :helptags ~/.vim/bundle/ctrlp.vim/doc
 let g:ctrlp_working_path_mode = 'a'
+
+augroup au_go_group
+  autocmd!
+  autocmd FileType go set noexpandtab
+  autocmd FileType go set tabstop=2 shiftwidth=2 softtabstop=2 tw=120 colorcolumn=120
+  if exists("g:did_load_filetypes")
+    filetype off
+    filetype plugin indent off
+  endif
+  set runtimepath+=$GOROOT/misc/vim " replace $GOROOT with the output of: go env GOROOT
+  filetype plugin indent on
+  syntax on
+
+  let g:go_fmt_command = "gofmt"
+augroup END
+
+autocmd BufWritePost *.py call Flake8()
+
+set cursorline
+au BufRead,BufNewFile *.thrift set filetype=thrift
+au! Syntax thrift source ~/.vim/thrift.vim
+
+map <C-K> :pyf /mnt/vol/engshare/admin/scripts/vim/clang-format.py<CR>
+imap <C-K> <ESC>:pyf /mnt/vol/engshare/admin/scripts/vim/clang-format.py<CR>i
+
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
+
+set background=dark
+set t_Co=256
+colorscheme solarized
+let g:solarized_termcolors=256
+let g:airline_theme="powerlineish"

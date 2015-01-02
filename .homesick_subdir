@@ -2,3 +2,4 @@
 .homesick/repos/dotfiles/home/.config
 .config
 .config/beets
+.vim

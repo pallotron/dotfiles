@@ -106,21 +106,6 @@ set runtimepath^=~/.vim/bundle/ctrlp.vim
 :helptags ~/.vim/bundle/ctrlp.vim/doc
 let g:ctrlp_working_path_mode = 'a'
 
-augroup au_go_group
-  autocmd!
-  autocmd FileType go set noexpandtab
-  autocmd FileType go set tabstop=2 shiftwidth=2 softtabstop=2 tw=120 colorcolumn=120
-  if exists("g:did_load_filetypes")
-    filetype off
-    filetype plugin indent off
-  endif
-  set runtimepath+=$GOROOT/misc/vim " replace $GOROOT with the output of: go env GOROOT
-  filetype plugin indent on
-  syntax on
-
-  let g:go_fmt_command = "gofmt"
-augroup END
-
 autocmd BufWritePost *.py call Flake8()
 
 set cursorline

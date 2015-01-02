@@ -66,3 +66,5 @@ if [ $? -eq 0 ]; then
 else
   eval $(gpg-agent --daemon --write-env-file "${HOME}/.gpg-agent-info") 
 fi
+
+alias d="mosh dev"

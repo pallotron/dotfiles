@@ -10,6 +10,7 @@ set header_cache =~/.mutt/cache/headers
 set message_cachedir =~/.mutt/cache/bodies
 set certificate_file =~/.mutt/certificates
 set smtp_url = "smtp://pallotron@smtp.gmail.com:587/"
+set smtp_authenticators = 'gssapi:login'
 set move = no  #Stop asking to "move read messages to mbox"!
 set imap_keepalive = 900
 bind editor <space> noop

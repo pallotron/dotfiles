@@ -2,7 +2,7 @@
 
 execute pathogen#infect()
 
-se autoread
+set autoread
 set ttyfast
 set copyindent
 set mouse=a
@@ -27,6 +27,7 @@ au BufRead,BufNewFile *.py set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
 au BufRead,BufNewFile *.tw set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
 au BufRead,BufNewFile *.cconf set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
 au BufRead,BufNewFile *.cinc set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
+au BufRead,BufNewFile *.thrift-cvalidator set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
 au BufRead,BufNewFile TARGETS set tabstop=4 shiftwidth=4 filetype=python wm=2 tw=80
 au BufRead,BufNewFile *.rb set tabstop=2 shiftwidth=2 wm=2 tw=80
 au BufRead,BufNewFile *.php set tabstop=2 shiftwidth=2 wm=2 tw=80
@@ -104,7 +105,6 @@ autocmd FileType make setlocal noexpandtab
 " ctrlp plugin
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 :helptags ~/.vim/bundle/ctrlp.vim/doc
-let g:ctrlp_working_path_mode = 'a'
 
 autocmd BufWritePost *.py call Flake8()
 
@@ -112,14 +112,54 @@ set cursorline
 au BufRead,BufNewFile *.thrift set filetype=thrift
 au! Syntax thrift source ~/.vim/thrift.vim
 
-map <C-K> :pyf /mnt/vol/engshare/admin/scripts/vim/clang-format.py<CR>
-imap <C-K> <ESC>:pyf /mnt/vol/engshare/admin/scripts/vim/clang-format.py<CR>i
+" clang ------------------------------------------------------------------------
+" map to <Leader>cf in C++ code
+autocmd FileType c,cpp,objc nnoremap <buffer><Leader>cf :<C-u>ClangFormat<CR>
+autocmd FileType c,cpp,objc vnoremap <buffer><Leader>cf :ClangFormat<CR>
+" if you install vim-operator-user
+autocmd FileType c,cpp,objc map <buffer><Leader>x <Plug>(operator-clang-format)
+" Toggle auto formatting:
+nmap <Leader>C :ClangFormatAutoToggle<CR>
+" ------------------------------------------------------------------------------
 
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 
 set background=dark
 set t_Co=256
-colorscheme solarized
 let g:solarized_termcolors=256
 let g:airline_theme="powerlineish"
+
+" Mappings to access buffers (don't use "\p" because a
+" delay before pressing "p" would accidentally paste).
+" \l       : list buffers
+" \b \f \g : go back/forward/last-used
+" \1 \2 \3 : go to buffer 1/2/3 etc
+nnoremap <Leader>l :ls<CR>
+nnoremap <Leader>b :bp<CR>
+nnoremap <Leader>f :bn<CR>
+nnoremap <Leader>g :e#<CR>
+nnoremap <Leader>1 :1b<CR>
+nnoremap <Leader>2 :2b<CR>
+nnoremap <Leader>3 :3b<CR>
+nnoremap <Leader>4 :4b<CR>
+nnoremap <Leader>5 :5b<CR>
+nnoremap <Leader>6 :6b<CR>
+nnoremap <Leader>7 :7b<CR>
+nnoremap <Leader>8 :8b<CR>
+nnoremap <Leader>9 :9b<CR>
+nnoremap <Leader>0 :10b<CR>
+" It's useful to show the buffer number in the status line.
+set laststatus=2 statusline=%02n:%<%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P
+
+nnoremap <silent> <Leader>+ :exe "resize " . (winheight(0) * 3/2)<CR>
+nnoremap <silent> <Leader>- :exe "resize " . (winheight(0) * 2/3)<CR>
+
+" Don't resize automatically.
+let g:golden_ratio_autocommand = 0
+" Mnemonic: - is next to =, but instead of resizing equally, all windows are
+" resized to focus on the current.
+nmap <C-w>- <Plug>(golden_ratio_resize)
+" Fill screen with current window.
+nnoremap <C-w>+ <C-w><Bar><C-w>_
+let g:golden_ratio_filetypes_blacklist = ["nerdtree", "unite"]

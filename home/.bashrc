@@ -68,3 +68,9 @@ else
 fi
 
 alias d="mosh dev"
+
+export XML_CATALOG_FILES="/usr/local/etc/xml/catalog"
+. $HOME/bin/iTerm2colors.sh
+
+export PATH=$PATH:/usr/local/opt/go/libexec/bin
+export GOPATH=/usr/local/opt/go/

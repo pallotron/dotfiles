@@ -1,4 +1,4 @@
-set guifont=Meslo\ LG\ S\ for\ Powerline:h12
+set guifont=Ubuntu\ Mono\ derivative\ Powerline:h14
 let g:NERDTreeWinPos = "right"
 set guioptions-=T " Removes top toolbar
 set guioptions-=r " Removes right hand scroll bar

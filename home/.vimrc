@@ -2,12 +2,9 @@
 
 execute pathogen#infect()
 
-set autoread
 set ttyfast
 set copyindent
 set mouse=a
-set lazyredraw
-set paste
 set expandtab
 
 filetype on
@@ -17,9 +14,6 @@ filetype plugin indent on
 :nmap <silent> <C-P> :set invnumber<CR>
 :set invnumber
 "autocmd VimEnter * set invnumber
-
-let &t_SI = "\<Esc>]50;CursorShape=1\x7"
-let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 
 au BufRead,BufNewFile * set tabstop=2 shiftwidth=2
 au BufRead,BufNewFile *.phpt set filetype=php wm=2 tw=80
@@ -35,34 +29,18 @@ au BufRead,BufNewFile *.c set tabstop=2 shiftwidth=2 wm=2 tw=80
 au BufRead,BufNewFile *.h set tabstop=2 shiftwidth=2 wm=2 tw=80
 au BufRead,BufNewFile *.cpp set tabstop=2 shiftwidth=2 wm=2 tw=80
 au BufRead,BufNewFile *.md set filetype=markdown wm=2 tw=80
+:autocmd BufNewFile,BufRead [Mm]akefile* set noexpandtab
 
-"autocmd VimEnter * NERDTree
+
 autocmd VimEnter * wincmd p
-let g:NERDTreeWinPos = "right"
+let g:NERDTreeWinPos = "left"
 nmap <silent> <C-D> :NERDTreeToggle<CR>
 nnoremap <silent> <C-L> :noh<CR><C-L>
 
 " highlight trailing whitespace "
 match Error '\s\+$\|\t'
-
-if exists('+colorcolumn')
-  set colorcolumn=80
-  let s:color_column_old = 0
-else
-  au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
-endif
-" toggle colored right border after 80 chars
-
-function! s:ToggleColorColumn()
-    if s:color_column_old == 0
-        let s:color_column_old = &colorcolumn
-        windo let &colorcolumn = 0
-    else
-        windo let &colorcolumn=s:color_column_old
-        let s:color_column_old = 0
-    endif
-endfunction
-nnoremap <Leader>8 :call <SID>ToggleColorColumn()<cr>
+set colorcolumn=80
+let s:color_column_old = 0
 
 " Ctrl-C/N to create new tab and jump to next tab "
 " (this should roughly match the 'screen' keys Ctrl-A+C and Ctrl-A+N) "
@@ -70,18 +48,16 @@ map <C-c>c :tabe<CR>
 map <C-c>o :tabp<CR>
 map <C-c>p :tabn<CR>
 
-" always show status line with file name and position "
-set laststatus=2 showmode
-set statusline=%t\ %y\ format:\ %{&ff};\ [%c,%l]
-
-" pretty cool interactive search (like Firefox) "
-set incsearch
+" It's useful to show the buffer number in the status line.
+set laststatus=2 showmode statusline=%02n:%<%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 
 highlight OverLength ctermbg=red ctermfg=white guibg=#592929
 match OverLength /\%81v.\+/
 syn match tab display "\t"
 hi link tab Error
 " to fix run :retab
+
+highlight ColorColumn ctermbg=235 guibg=#003541
 
 fun! <SID>StripTrailingWhitespaces()
     let l = line(".")
@@ -105,6 +81,8 @@ autocmd FileType make setlocal noexpandtab
 " ctrlp plugin
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 :helptags ~/.vim/bundle/ctrlp.vim/doc
+let g:ctrlp_working_path_mode = 'ra'
+"let g:ctrlp_user_command = 'find %s -type f'
 
 autocmd BufWritePost *.py call Flake8()
 
@@ -112,23 +90,8 @@ set cursorline
 au BufRead,BufNewFile *.thrift set filetype=thrift
 au! Syntax thrift source ~/.vim/thrift.vim
 
-" clang ------------------------------------------------------------------------
-" map to <Leader>cf in C++ code
-autocmd FileType c,cpp,objc nnoremap <buffer><Leader>cf :<C-u>ClangFormat<CR>
-autocmd FileType c,cpp,objc vnoremap <buffer><Leader>cf :ClangFormat<CR>
-" if you install vim-operator-user
-autocmd FileType c,cpp,objc map <buffer><Leader>x <Plug>(operator-clang-format)
-" Toggle auto formatting:
-nmap <Leader>C :ClangFormatAutoToggle<CR>
-" ------------------------------------------------------------------------------
-
-let g:airline_powerline_fonts = 1
-let g:airline#extensions#tabline#enabled = 1
-
-set background=dark
-set t_Co=256
-let g:solarized_termcolors=256
-let g:airline_theme="powerlineish"
+map <C-K> :pyf /mnt/vol/engshare/admin/scripts/vim/clang-format.py<CR>
+imap <C-K> <ESC>:pyf /mnt/vol/engshare/admin/scripts/vim/clang-format.py<CR>i
 
 " Mappings to access buffers (don't use "\p" because a
 " delay before pressing "p" would accidentally paste).
@@ -149,8 +112,6 @@ nnoremap <Leader>7 :7b<CR>
 nnoremap <Leader>8 :8b<CR>
 nnoremap <Leader>9 :9b<CR>
 nnoremap <Leader>0 :10b<CR>
-" It's useful to show the buffer number in the status line.
-set laststatus=2 statusline=%02n:%<%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 
 nnoremap <silent> <Leader>+ :exe "resize " . (winheight(0) * 3/2)<CR>
 nnoremap <silent> <Leader>- :exe "resize " . (winheight(0) * 2/3)<CR>
@@ -163,3 +124,33 @@ nmap <C-w>- <Plug>(golden_ratio_resize)
 " Fill screen with current window.
 nnoremap <C-w>+ <C-w><Bar><C-w>_
 let g:golden_ratio_filetypes_blacklist = ["nerdtree", "unite"]
+
+let g:airline_theme="powerlineish"
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
+
+let g:conoline_auto_enable = 1
+
+augroup au_go_group
+  autocmd!
+  autocmd FileType go set noexpandtab
+  autocmd FileType go set tabstop=2 shiftwidth=2 softtabstop=2
+  match none
+augroup END
+
+let g:flake8_cmd="/usr/local/bin/flake8"
+autocmd FileType python autocmd BufWritePost <buffer> call Flake8()
+let g:flake8_show_in_gutter=1
+let g:flake8_show_in_file=1
+
+:setlocal foldmethod=syntax
+
+:highlight LineNr ctermfg=white ctermbg=235
+
+":colorscheme solarized
+syntax enable
+set background=dark
+set t_Co=256
+let g:solarized_termcolors=   256
+let g:solarized_contrast  =   "normal"
+":colorscheme solarized

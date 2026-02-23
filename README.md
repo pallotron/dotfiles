@@ -6,7 +6,7 @@ My personal dotfiles, managed with [chezmoi](https://www.chezmoi.io/).
 
 | Path | Purpose |
 |------|---------|
-| `~/.zshrc`, `~/.zprofile` | Zsh shell configuration |
+| `~/.zshrc`, `~/.zprofile`, `~/.zshenv` | Zsh shell configuration |
 | `~/.p10k.zsh` | Powerlevel10k prompt theme |
 | `~/.config/jj/` | Jujutsu version control config |
 | `~/.claude/CLAUDE.md` | Global Claude Code instructions |

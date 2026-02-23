@@ -62,6 +62,20 @@ chezmoi git -- push
 
 > **Warning: template files.** If the file is managed as a template (contains `{{ ... }}` expressions for secrets or machine-specific values), `chezmoi re-add` will overwrite the template with the rendered values, stripping the expressions. Always run `chezmoi diff` first and manually restore any template expressions that were lost before committing.
 
+## Applying specific files
+
+To apply only certain files instead of everything:
+
+```sh
+chezmoi apply ~/.gitconfig ~/.zshrc
+```
+
+Dry run first to see what would change:
+
+```sh
+chezmoi apply --dry-run --verbose ~/.gitconfig
+```
+
 ## Pulling updates from the repo
 
 To pull and apply the latest changes from GitHub:

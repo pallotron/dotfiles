@@ -1,0 +1,22 @@
+#:schema https://jj-vcs.github.io/jj/latest/config-schema.json
+
+[ui]
+default-command = "log"
+pager = ":builtin"
+show-cryptographic-signatures = true
+
+[user]
+name = "Angelo Failla"
+email = "pallotron@gmail.com"
+
+[signing]
+behavior = "own"
+backend = "ssh"
+key = "~/.ssh/id_rsa.pub"
+backends.ssh.allowed-signers = "~/.ssh/allowed-signers"
+
+[signing.ssh]
+key = "~/.ssh/id_rsa.pub"
+
+#[git]
+#sign-on-push = true

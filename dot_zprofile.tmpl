@@ -1,0 +1,20 @@
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Added by `rbenv init` on Tue  4 Nov 2025 17:05:11 GMT
+eval "$(rbenv init - --no-rehash zsh)"
+export PLAID_CLIENT_ID="{{ onepasswordRead "op://Private/dotfiles/PLAID_CLIENT_ID" }}"
+export PLAID_SECRET="{{ onepasswordRead "op://Private/dotfiles/PLAID_SECRET" }}"
+export PLAID_SECRET_SANDBOX="{{ onepasswordRead "op://Private/dotfiles/PLAID_SECRET_SANDBOX" }}"
+export PLAID_ENV="production"  # or "development" or "production"
+
+export TRUELAYER_CLIENT_ID="{{ onepasswordRead "op://Private/dotfiles/TRUELAYER_CLIENT_ID" }}"
+export TRUELAYER_CLIENT_SECRET="{{ onepasswordRead "op://Private/dotfiles/TRUELAYER_CLIENT_SECRET" }}"
+
+export TRUELAYER_ENV="sandbox"
+export TRUELAYER_ENV="production"
+
+export TRUELAYER_PROVIDERS="uk-cs-mock uk-ob-all uk-oauth-all"
+export TRUELAYER_PROVIDERS="uk-ob-all uk-oauth-all ie-ob-all"
+
+export EDITOR=nvim
+alias vim=nvim

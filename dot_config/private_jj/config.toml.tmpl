@@ -7,7 +7,7 @@ show-cryptographic-signatures = true
 
 [user]
 name = "Angelo Failla"
-email = "pallotron@gmail.com"
+email = "{{ if eq .chezmoi.username "afailla" }}afailla@crusoe.ai{{ else }}pallotron@gmail.com{{ end }}"
 
 [signing]
 behavior = "own"

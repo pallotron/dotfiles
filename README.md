@@ -48,7 +48,53 @@ chezmoi update
 
 ```sh
 chezmoi add ~/.some/config/file
-chezmoi git add .
-chezmoi git commit -m "add some config"
-chezmoi git push
+chezmoi git -- add .
+chezmoi git -- commit -m "add some config"
+chezmoi git -- push
+```
+
+## Adding files with secrets
+
+If a file contains API keys, tokens, or other secrets, use templates instead of storing values directly.
+
+### 1. Add the secret to 1Password
+
+Open 1Password and add a new field to the **dotfiles** item in the **Private** vault.
+
+### 2. Add the file as a template
+
+```sh
+chezmoi add --template ~/.yourfile
+```
+
+If chezmoi warns about detected secrets when running a plain `chezmoi add`, stop and use `--template` instead.
+
+### 3. Replace hardcoded values in the template
+
+Edit the generated `.tmpl` file in the chezmoi source directory:
+
+```sh
+chezmoi edit ~/.yourfile
+```
+
+Replace each secret value with a `onepasswordRead` call:
+
+```
+export MY_API_KEY="{{ onepasswordRead "op://Private/dotfiles/MY_API_KEY" }}"
+```
+
+### 4. Verify the template renders correctly
+
+```sh
+chezmoi execute-template < ~/.local/share/chezmoi/dot_yourfile.tmpl
+```
+
+Check that the secrets are populated and no hardcoded values remain.
+
+### 5. Commit and push
+
+```sh
+chezmoi git -- add .
+chezmoi git -- commit -m "add yourfile with 1Password secret templating"
+chezmoi git -- push
 ```

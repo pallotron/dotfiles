@@ -8,7 +8,12 @@ My personal dotfiles, managed with [chezmoi](https://www.chezmoi.io/).
 |------|---------|
 | `~/.zshrc`, `~/.zprofile`, `~/.zshenv` | Zsh shell configuration |
 | `~/.p10k.zsh` | Powerlevel10k prompt theme |
+| `~/.vimrc` | Vim configuration |
+| `~/.gitconfig` | Git identity, signing key, and settings |
+| `~/.ssh/config` | SSH host aliases |
 | `~/.config/jj/` | Jujutsu version control config |
+| `~/.config/nvim/` | Neovim configuration |
+| `~/.config/gh/` | GitHub CLI config |
 | `~/.claude/CLAUDE.md` | Global Claude Code instructions |
 | `~/.claude/rules/` | Topic-specific Claude rules |
 | `~/.claude/skills/` | Custom Claude Code workflow skills |

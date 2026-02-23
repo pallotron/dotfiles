@@ -132,5 +132,5 @@ export NVM_DIR="$HOME/.nvm"
 
 export GEMINI_API_KEY="{{ onepasswordRead "op://Private/dotfiles/GEMINI_API_KEY" }}"
 eval "$(rbenv init -)"
-source /Users/pallotron/.config/op/plugins.sh
+source {{ .chezmoi.homeDir }}/.config/op/plugins.sh
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"

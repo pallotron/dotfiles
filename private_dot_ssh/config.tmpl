@@ -1,0 +1,12 @@
+Host skunk
+  HostName skunk.pallotron.net
+  User pallotron
+
+Host *
+  RemoteForward 2224 127.0.0.1:2224
+  IdentityFile ~/.ssh/github
+  IdentityFile ~/.ssh/id_rsa
+
+Host buco
+  User root
+  HostName buco.pallotron.net

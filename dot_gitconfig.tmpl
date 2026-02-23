@@ -1,0 +1,10 @@
+[user]
+	email = {{ if eq .chezmoi.username "afailla" }}afailla@crusoe.ai{{ else }}pallotron@gmail.com{{ end }}
+	name = Angelo Failla
+	signingkey = {{ .chezmoi.homeDir }}/.ssh/id_rsa.pub
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
+[gpg "ssh"]
+	allowedSignersFile = {{ .chezmoi.homeDir }}/.ssh/allowed_signers

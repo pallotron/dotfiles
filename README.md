@@ -14,11 +14,29 @@ My personal dotfiles, managed with [chezmoi](https://www.chezmoi.io/).
 | `~/.claude/skills/` | Custom Claude Code workflow skills |
 | `~/.claude/settings.json` | Claude Code settings and plugins |
 
-## Install
+## Restore on a new machine
+
+### 1. Install dependencies
+
+```sh
+brew install chezmoi 1password-cli
+```
+
+### 2. Sign in to 1Password
+
+```sh
+op signin
+```
+
+Some secrets (API keys, tokens) are stored in 1Password and injected at apply time. Signing in first is required.
+
+### 3. Apply dotfiles
 
 ```sh
 chezmoi init --apply https://github.com/pallotron/dotfiles
 ```
+
+This will render all templates with secrets pulled from 1Password and write the final files to your home directory.
 
 ## Update
 

@@ -43,7 +43,28 @@ chezmoi init --apply https://github.com/pallotron/dotfiles
 
 This will render all templates with secrets pulled from 1Password and write the final files to your home directory.
 
-## Update
+## Updating a file
+
+When you edit a dotfile directly (e.g. `~/.zshrc`), sync it back to chezmoi with:
+
+```sh
+chezmoi re-add ~/.zshrc
+```
+
+Then check what changed, commit and push:
+
+```sh
+chezmoi diff
+chezmoi git -- add .
+chezmoi git -- commit -m "update zshrc"
+chezmoi git -- push
+```
+
+> **Warning: template files.** If the file is managed as a template (contains `{{ ... }}` expressions for secrets or machine-specific values), `chezmoi re-add` will overwrite the template with the rendered values, stripping the expressions. Always run `chezmoi diff` first and manually restore any template expressions that were lost before committing.
+
+## Pulling updates from the repo
+
+To pull and apply the latest changes from GitHub:
 
 ```sh
 chezmoi update

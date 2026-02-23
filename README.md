@@ -131,7 +131,16 @@ chezmoi execute-template < ~/.local/share/chezmoi/dot_yourfile.tmpl
 
 Check that the secrets are populated and no hardcoded values remain.
 
-### 5. Commit and push
+### 5. Apply and verify on disk
+
+Apply just the one file and confirm it looks right:
+
+```sh
+chezmoi apply --dry-run --verbose ~/.yourfile
+chezmoi apply ~/.yourfile
+```
+
+### 6. Commit and push
 
 ```sh
 chezmoi git -- add .

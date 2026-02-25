@@ -9,90 +9,67 @@ description: Use when starting feature work that needs isolation from current wo
 
 jj workspaces create isolated working copies sharing the same repository, allowing work on multiple changes simultaneously without switching.
 
-**Core principle:** Systematic directory selection + safety verification = reliable isolation.
+**Core principle:** Workspaces must be siblings to the main repo — never inside it.
 
 **Announce at start:** "I'm using the using-jj-workspaces skill to set up an isolated workspace."
 
+## Why Siblings, Not Subdirectories
+
+Placing a workspace inside the repo (e.g. `.worktrees/feature`) creates a repo-inside-a-repo situation. jj will warn about this, and the nested working copy gets snapshotted as regular files — polluting `jj status` with compiled artifacts, node_modules, etc. Always use a path outside the repo root.
+
 ## Directory Selection Process
 
-Follow this priority order:
-
-### 1. Check Existing Directories
+### 1. Detect Project Name and Root
 
 ```bash
-# Check in priority order
-ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-ls -d worktrees 2>/dev/null      # Alternative
+repo_root=$(jj root)
+project=$(basename "$repo_root")
 ```
-
-**If found:** Use that directory. If both exist, `.worktrees` wins.
 
 ### 2. Check CLAUDE.md
 
 ```bash
-grep -i "worktree.*director\|workspace.*director" CLAUDE.md 2>/dev/null
+grep -i "workspace.*director\|worktree.*director" "$repo_root/CLAUDE.md" 2>/dev/null
 ```
 
 **If preference specified:** Use it without asking.
 
-### 3. Ask User
+### 3. Default Location
 
-If no directory exists and no CLAUDE.md preference:
+Use a sibling directory next to the repo:
 
 ```
-No workspace directory found. Where should I create workspaces?
+<parent-of-repo>/<project>-<feature-name>
+```
 
-1. .worktrees/ (project-local, hidden)
-2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
+Example: repo at `~/code/myapp` → workspace at `~/code/myapp-auth`
+
+If the parent directory already has many repos and you want to keep things tidy, ask the user:
+
+```
+Where should I create the workspace?
+
+1. ../myapp-<feature> (sibling directory, next to the repo)
+2. ~/.local/share/jj-workspaces/myapp/<feature> (global location)
 
 Which would you prefer?
 ```
 
-## Safety Verification
-
-### For Project-Local Directories (.worktrees or worktrees)
-
-**MUST verify directory is ignored before creating workspace:**
-
-```bash
-# Check .gitignore directly (jj respects .gitignore files)
-grep -q "^\.worktrees" .gitignore 2>/dev/null || grep -q "^worktrees" .gitignore 2>/dev/null
-```
-
-**If NOT ignored:**
-
-1. Add appropriate line to `.gitignore`
-2. Commit with `jj describe` or `jj commit`
-3. Proceed with workspace creation
-
-**Why critical:** Prevents accidentally tracking workspace contents.
-
-### For Global Directory (~/.config/superpowers/worktrees)
-
-No `.gitignore` verification needed — outside project entirely.
-
 ## Creation Steps
 
-### 1. Detect Project Name
+### 1. Determine Path
 
 ```bash
-project=$(basename "$(jj root)")
+repo_root=$(jj root)
+project=$(basename "$repo_root")
+parent=$(dirname "$repo_root")
+path="$parent/$project-$FEATURE_NAME"
 ```
 
 ### 2. Create Workspace
 
 ```bash
-# Determine full path
-case $LOCATION in
-  .worktrees|worktrees)
-    path="$LOCATION/$FEATURE_NAME"
-    ;;
-  ~/.config/superpowers/worktrees/*)
-    path="~/.config/superpowers/worktrees/$project/$FEATURE_NAME"
-    ;;
-esac
-
-# Create workspace (defaults to current @- revision)
+# Create workspace at sibling path
 jj workspace add "$path"
 cd "$path"
 
@@ -149,11 +126,8 @@ Ready to implement <feature-name>
 
 | Situation | Action |
 |-----------|--------|
-| `.worktrees/` exists | Use it (verify ignored) |
-| `worktrees/` exists | Use it (verify ignored) |
-| Both exist | Use `.worktrees/` |
-| Neither exists | Check CLAUDE.md → Ask user |
-| Directory not ignored | Add to `.gitignore` + commit |
+| CLAUDE.md specifies location | Use it |
+| No preference | Use sibling `../project-feature` |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
@@ -178,45 +152,40 @@ List workspaces with `jj workspace list`.
 | List | `git worktree list` | `jj workspace list` |
 | Remove | `git worktree remove` | `jj workspace forget` |
 | Project root | `git rev-parse --show-toplevel` | `jj root` |
-| Ignore check | `git check-ignore -q` | `grep .gitignore` |
+| Typical location | `.worktrees/` inside repo | sibling directory `../project-feature` |
 | Named tracking | branch | bookmark (`jj bookmark create`) |
 
 ## Common Mistakes
 
-### Skipping ignore verification
+### Placing workspace inside the repo
 
-- **Problem:** Workspace contents get tracked, pollute jj status
-- **Fix:** Always grep `.gitignore` before creating project-local workspace
-
-### Assuming directory location
-
-- **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: existing > CLAUDE.md > ask
+- **Problem:** Creates a repo-inside-a-repo. jj snapshots workspace files (compiled binaries, node_modules) as regular project files, polluting `jj status` and `jj diff`.
+- **Fix:** Always use a path outside `jj root` — a sibling directory or global location.
 
 ### Forgetting to run `jj new` after workspace creation
 
-- **Problem:** Working directly on the parent commit, not an isolated change
-- **Fix:** Always run `jj new -m "wip: ..."` immediately after entering the new workspace
+- **Problem:** Working directly on the parent commit, not an isolated change.
+- **Fix:** Always run `jj new -m "wip: ..."` immediately after entering the new workspace.
 
 ### Proceeding with failing tests
 
-- **Problem:** Can't distinguish new bugs from pre-existing issues
-- **Fix:** Report failures, get explicit permission to proceed
+- **Problem:** Can't distinguish new bugs from pre-existing issues.
+- **Fix:** Report failures, get explicit permission to proceed.
 
 ## Example Workflow
 
 ```
 You: I'm using the using-jj-workspaces skill to set up an isolated workspace.
 
-[Check .worktrees/ - exists]
-[Verify ignored - grep .gitignore confirms .worktrees is listed]
-[Create workspace: jj workspace add .worktrees/auth]
-[cd .worktrees/auth]
+[repo_root = /Users/user/code/myapp, project = myapp]
+[path = /Users/user/code/myapp-auth]
+[jj workspace add /Users/user/code/myapp-auth]
+[cd /Users/user/code/myapp-auth]
 [jj new -m "wip: auth feature"]
 [Run npm install]
 [Run npm test - 47 passing]
 
-Workspace ready at /Users/user/myproject/.worktrees/auth
+Workspace ready at /Users/user/code/myapp-auth
 Tests passing (47 tests, 0 failures)
 Ready to implement auth feature
 ```
@@ -224,16 +193,14 @@ Ready to implement auth feature
 ## Red Flags
 
 **Never:**
-- Create workspace without verifying it's ignored (project-local)
+- Create workspace inside the repo directory (`.worktrees/`, `worktrees/`, or any subdirectory)
 - Skip `jj new` after workspace creation (work directly on parent commit)
 - Skip baseline test verification
 - Proceed with failing tests without asking
-- Assume directory location when ambiguous
-- Skip CLAUDE.md check
 
 **Always:**
-- Follow directory priority: existing > CLAUDE.md > ask
-- Verify directory is ignored for project-local
+- Use a sibling path outside `jj root`
+- Check CLAUDE.md first for location preference
 - Run `jj new` immediately after entering the new workspace
 - Auto-detect and run project setup
 - Verify clean test baseline

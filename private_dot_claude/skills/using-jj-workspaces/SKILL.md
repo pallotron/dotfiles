@@ -73,11 +73,13 @@ path="$parent/$project-$FEATURE_NAME"
 jj workspace add "$path"
 cd "$path"
 
-# Start a new change to work on
-jj new -m "wip: $FEATURE_NAME"
+# Describe the empty change that jj workspace add already created at @
+# DO NOT run `jj new` here — workspace add already placed an empty change at @.
+# Running jj new creates a second unnamed empty commit that causes `jj git push` to fail.
+jj describe -m "wip: $FEATURE_NAME"
 ```
 
-**Note:** Unlike git worktrees, jj workspaces don't require a branch name. The new workspace gets its own `@` commit. Use `jj bookmark create $FEATURE_NAME` later if you need a named bookmark.
+**Note:** Unlike git worktrees, jj workspaces don't require a branch name. The new workspace gets its own `@` commit at the tip of the current revision. Use `jj bookmark create $FEATURE_NAME` later if you need a named bookmark.
 
 ### 3. Run Project Setup
 
@@ -134,14 +136,17 @@ Ready to implement <feature-name>
 ## Cleanup
 
 ```bash
-# Forget the workspace (from any workspace)
-jj workspace forget $WORKSPACE_NAME
+# Find the exact workspace name first — it's the directory basename, not a short label
+jj workspace list
+
+# Forget the workspace (from any workspace in the repo)
+jj workspace forget coredns-netbox-persistent-zones   # example: full directory basename
 
 # Remove the directory
 rm -rf "$path"
 ```
 
-List workspaces with `jj workspace list`.
+**Important:** `jj workspace forget` takes the workspace name as shown by `jj workspace list` — the full directory basename (e.g. `myapp-feature`), not a short alias.
 
 ## Key jj vs git Differences
 
@@ -162,10 +167,10 @@ List workspaces with `jj workspace list`.
 - **Problem:** Creates a repo-inside-a-repo. jj snapshots workspace files (compiled binaries, node_modules) as regular project files, polluting `jj status` and `jj diff`.
 - **Fix:** Always use a path outside `jj root` — a sibling directory or global location.
 
-### Forgetting to run `jj new` after workspace creation
+### Running `jj new` after workspace creation
 
-- **Problem:** Working directly on the parent commit, not an isolated change.
-- **Fix:** Always run `jj new -m "wip: ..."` immediately after entering the new workspace.
+- **Problem:** `jj workspace add` already creates an empty change at `@`. Running `jj new` on top produces a *second* unnamed empty commit. When you later run `jj git push`, it fails: *"Won't push commit ... since it has no description"*. Fixing it requires a `jj rebase` to drop the extra commit.
+- **Fix:** After `jj workspace add`, just run `jj describe -m "wip: ..."` to name the existing empty change. Never run `jj new` immediately after `jj workspace add`.
 
 ### Proceeding with failing tests
 
@@ -181,7 +186,7 @@ You: I'm using the using-jj-workspaces skill to set up an isolated workspace.
 [path = /Users/user/code/myapp-auth]
 [jj workspace add /Users/user/code/myapp-auth]
 [cd /Users/user/code/myapp-auth]
-[jj new -m "wip: auth feature"]
+[jj describe -m "wip: auth feature"]   # describe the empty @ created by workspace add — do NOT jj new
 [Run npm install]
 [Run npm test - 47 passing]
 
@@ -194,16 +199,18 @@ Ready to implement auth feature
 
 **Never:**
 - Create workspace inside the repo directory (`.worktrees/`, `worktrees/`, or any subdirectory)
-- Skip `jj new` after workspace creation (work directly on parent commit)
+- Run `jj new` after `jj workspace add` — it already creates an empty `@`; use `jj describe -m "..."` instead
 - Skip baseline test verification
 - Proceed with failing tests without asking
+- Run `gh` CLI commands from the sibling workspace directory — it has no `.git`; run from the main repo
 
 **Always:**
 - Use a sibling path outside `jj root`
 - Check CLAUDE.md first for location preference
-- Run `jj new` immediately after entering the new workspace
+- Run `jj describe -m "wip: ..."` (not `jj new`) immediately after creating the workspace
 - Auto-detect and run project setup
 - Verify clean test baseline
+- Use `jj workspace list` to find the exact workspace name before `jj workspace forget`
 
 ## Integration
 

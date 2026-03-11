@@ -1,92 +1,315 @@
 ---
-name: use-jujutsu
-description: This skill should be used for detailed guidance on Jujutsu (jj) VCS operations, including committing, pushing, searching history, and working with revisions/revsets. Use it when the user asks "how do I use jj?", "translate git to jj", ask to interact with VCS using jj or for specific jj command syntax.
-version: 0.3.0
+name: jujutsu
+description: "**REQUIRED** - ALways activate FIRST on any git/VCS operations (commit, status, branch, push, etc.), especially when HEAD is detached. If `.jj/` exists -> this is a Jujutsu (jj) repo - git commands will corrupt data. Essential git safety instructions inside. DO NOT IGNORE."
+allowed-tools: Bash(jj *)
 ---
 
-# Using Jujutsu (jj) VCS
+# Jujutsu (jj) Version Control System
 
-This guide provides the definitive instruction set for working with **Jujutsu (jj)**.
+This skill helps you work with Jujutsu, a Git-compatible VCS with mutable commits and automatic rebasing.
 
-## Core VCS Commands
+**Tested with jj v0.37.0** - Commands may differ in other versions.
 
-**CRITICAL: This repository uses Jujutsu (jj), not git.** Always use `jj` commands for version control operations.
-- Check status: `jj st --no-pager`
-- View history: `jj log --no-pager`
-- Create commit: `jj commit -m "message"`
-- Only commit related changes: `jj commit -m "message" <filesets>`
-  - Example: `jj commit -m "fix auth bug" src/auth.rs tests/auth_test.rs`
-  - NEVER restore files to exclude them from a commit.
-- Push: `jj git push`
-- Push main: `jj bookmark set main -r @- && jj git push`
-- Undo last jj command: `jj undo`
-- Help: `jj help` -- use this is you need to research how `jj` works. Or use available MCPs.
+## Important: Automated/Agent Environment
 
-## Pushing a Feature Branch (PR workflow)
+When running as an agent:
 
-New bookmarks must be tracked before pushing:
+1. **Always use `-m` flags** to provide messages inline rather than relying on editor prompts:
 
 ```bash
-jj bookmark create my-feature -r @        # create bookmark at current change
-jj bookmark track my-feature --remote=origin  # required for new bookmarks
-jj git push --bookmark my-feature
+# Always use -m to avoid editor prompts
+jj desc -m "message"      # NOT: jj desc
+jj squash -m "message"    # NOT: jj squash (which opens editor)
 ```
 
-Skipping `bookmark track` causes: *"Refusing to create new remote bookmark"*.
+Editor-based commands will fail in non-interactive environments.
 
-## Bookmark Tips
+2. **Verify operations with `jj st`** after mutations (`squash`, `abandon`, `rebase`, `restore`) to confirm the operation succeeded.
 
-- **Moving a bookmark backward:** `jj bookmark set` refuses by default. Use `--allow-backwards`:
-  ```bash
-  jj bookmark set main -r "main@origin" --allow-backwards
-  ```
-- **List all bookmarks:** `jj bookmark list`
+## Core Concepts
 
-## Search and History Operations
+### The Working Copy is a Commit
 
-### History Search
-- Use `jj log -r '<revset>'` with appropriate revset expressions
-- For searching by message: `jj log -r "description(pattern)"`
-- For searching by author: `jj log -r "author(pattern)"`
-- For date-based searches: `jj log -r "after(date)"` or `jj log -r "before(date)"`
+In jj, your working directory is always a commit (referenced as `@`). Changes are automatically snapshotted when you run any jj command. There is no staging area.
 
-### Code Search
-- Prefer `rg` (ripgrep) or `grep` over any VCS-integrated grep
-- Do **not** use `git grep` in jj repos; use `rg` instead
+There is no need to run `jj commit`.
 
-## Working with Revisions (Revsets)
-- `@` — Current working-copy parent revision
-- `@-` — Parent of current revision
-- `<ref>` — Specific revision by ref (supports short hashes)
-- `main` — Branch by name
-- `ancestors(@)` — All ancestors of current revision
-- `descendants(@)` — All descendants of current revision
+### Commits Are Mutable
 
-## Before Creating a New Change
+**CRITICAL**: Unlike git, jj commits can be freely modified. This enables a high-quality commit workflow:
 
-**Always check `jj log` before running `jj new`.** If `@` is already an empty change (no description, no file changes), do not run `jj new` — just describe the existing one:
+1. Before starting work, run `jj st`. If `@` already has changes, run `jj new` first. If `@` is empty, use it as-is.
+2. Describe your intended changes with `jj desc -m"Message"`
+3. Make your changes.
+4. Do NOT run `jj new` when finished — leave that to the next task's step 1.
+
+You may refine the commit using `jj squash` or `jj absorb` as needed
+
+### Change IDs vs Commit IDs
+
+- **Change ID**: A stable identifier (like `tqpwlqmp`) that persists when a commit is rewritten
+- **Commit ID**: A content hash (like `3ccf7581`) that changes when commit content changes
+
+Prefer using Change IDs when referencing commits in commands.
+
+## Essential Workflow
+
+### Starting Work: Describe First, Then Code
+
+**Always create your commit message before writing code:**
 
 ```bash
-# Check first
-jj log --no-pager -r @
+# First, describe what you intend to do
+jj desc -m "Add user authentication to login endpoint"
 
-# @ is already empty? Describe it, don't stack another change on top:
-jj describe -m "feat: my work"
+# Then make your changes - they automatically become part of this commit
+# ... edit files ...
 
-# @ has content? Then it's safe to create a new change:
-jj new -m "feat: my work"
+# Check status
+jj st
 ```
 
-**Why this matters:** `jj workspace add` and certain other operations leave an empty unnamed `@`. Running `jj new` on top creates a second empty commit with no description. That commit ends up in the ancestry chain of any bookmark you create, and `jj git push` will refuse: *"Won't push commit … since it has no description"*. Fixing it requires a `jj rebase` to drop the extra commit.
+### Creating Atomic Commits
 
-**Rule:** `jj new` on an empty `@` = always a mistake. Describe, don't stack.
+Each commit should represent ONE logical change. Use this format for commit messages:
 
-## Important Constraints
-- **Never use `git` commands in `.jj/` repositories**—translate to jj equivalent.
-- **Do not mix `git` and `jj` operations**; they have incompatible internal models.
-- If a jj command fails, provide the error message and suggest alternatives.
+```
+Examples:
+- "Add validation to user input forms"
+- "Fix null pointer in payment processor"
+- "Remove deprecated API endpoints"
+- "Update dependencies to latest versions"
+```
 
-## Integration with Search and Analysis
-- Use `jj log` instead of `git log` to find recent changes.
-- Use `jj diff` to compare revisions.
-- Never use `git log -S` or `git log -G`; translate to `jj log` with appropriate revsets.
+### Viewing History
+
+```bash
+# View recent commits
+jj log
+
+# View with patches
+jj log -p
+
+# View specific commit
+jj show <change-id>
+
+# View diff of working copy
+jj diff
+```
+
+### Moving Between Commits
+
+```bash
+# Create a new empty commit on top of current
+jj new
+
+# Create new commit with message
+jj new && jj desc -m "Commit message"
+
+# Edit an existing commit (working copy becomes that commit)
+jj edit <change-id>
+
+# Edit the previous commit
+jj prev -e
+
+# Edit the next commit
+jj next -e
+```
+
+## Refining Commits
+
+### Squashing Changes
+
+Move changes from current commit into its parent:
+
+```bash
+# Squash all changes into parent
+jj squash
+```
+
+**Note**: `jj squash -i` opens an interactive UI and will hang in agent environments. Avoid it.
+
+### Splitting Commits
+
+**Warning**: `jj split` is interactive and will hang in agent environments. To divide a commit, use `jj restore` to move changes out, then create separate commits manually.
+
+### Absorbing Changes
+
+Automatically distribute changes to the commits that last modified those lines:
+
+```bash
+# Absorb working copy changes into appropriate ancestor commits
+jj absorb
+```
+
+### Abandoning Commits
+
+Remove a commit entirely (descendants are rebased to its parent):
+
+```bash
+jj abandon <change-id>
+```
+
+### Undoing Operations
+
+Reverse the last jj operation:
+
+```bash
+jj undo
+```
+
+This reverts the repository to its state before the previous command. Useful for recovering from mistakes like accidental `abandon`, `squash`, or `rebase`.
+
+### Restoring Files
+
+Discard changes to specific files or restore files from another revision:
+
+```bash
+# Discard all uncommitted changes in working copy (restore from parent)
+jj restore
+
+# Discard changes to specific files
+jj restore path/to/file.txt
+
+# Restore files from a specific revision
+jj restore --from <change-id> path/to/file.txt
+```
+
+## Working with Bookmarks (Branches)
+
+Bookmarks are jj's equivalent to git branches:
+
+```bash
+# Create a bookmark at current commit
+jj bookmark create my-feature -r@
+
+# Move bookmark to a different commit
+jj bookmark move my-feature --to <change-id>
+
+# List bookmarks
+jj bookmark list
+
+# Delete a bookmark
+jj bookmark delete my-feature
+```
+
+## Git Integration
+
+### Working with Existing Git Repos
+
+```bash
+# Clone a git repository
+jj git clone <url>
+
+# Initialize jj in an existing git repo
+jj git init --colocate
+```
+
+### Switching Between jj and git (Colocated Repos)
+
+In a colocated repository (where both `.jj/` and `.git/` exist), you can use both jj and git commands. However, there are important considerations:
+
+**Switching to git mode** (e.g., for merge workflows):
+```bash
+# First, ensure your jj working copy is clean
+jj st
+
+# Then checkout a branch with git
+git checkout <branch-name>
+```
+
+**Switching back to jj mode**:
+```bash
+# Use jj edit to resume working with jj
+jj edit <change-id>
+```
+
+**Important notes:**
+- Git may complain about uncommitted changes if jj's working copy differs from the git HEAD
+- ALWAYS ensure your work is committed in jj before switching to git
+- After git operations, jj will detect and incorporate the changes on next command
+
+### Pushing Changes
+
+When the user asks you to push changes:
+
+```bash
+# Push a specific bookmark to the remote
+jj git push -b <bookmark-name>
+
+# Example: push the main bookmark
+jj git push -b main
+```
+
+**Before pushing, ensure:**
+1. Your bookmark points to the correct commit (bookmarks don't auto-advance like git branches)
+2. The commits are refined and atomic
+3. The user has explicitly requested the push
+
+**IMPORTANT**: Unlike git branches, jj bookmarks do not automatically move when you create new commits. You must manually update them before pushing:
+
+```bash
+# Move an existing bookmark to the current commit
+jj bookmark move my-feature --to @
+
+# Then push it
+jj git push -b my-feature
+```
+
+If no bookmark exists for your changes, create one first:
+
+```bash
+# Create a bookmark at the current commit
+jj bookmark create my-feature
+
+# Then push it
+jj git push -b my-feature
+```
+
+## Handling Conflicts
+
+jj allows committing conflicts — you can resolve them later:
+
+```bash
+# View conflicts
+jj st
+```
+
+**Agent conflict resolution**: Do not use `jj resolve` (interactive). Instead, edit the conflicted files directly to remove conflict markers, then run `jj st` to verify resolution.
+
+## Preserving Commit Quality
+
+**IMPORTANT**: Because commits are mutable, always refine them:
+
+1. **Review your commit**: `jj show @` or `jj diff`
+2. **Is it atomic?** One logical change per commit
+3. **Is the message clear?** Use imperative verb phrase in sentence case format with no full stop: "Verb object"
+4. **Are there unrelated changes?** Use `jj restore` to move changes out, then create separate commits
+5. **Should changes be elsewhere?** Use `jj squash` or `jj absorb`
+
+## Quick Reference
+
+| Action | Command |
+|--------|---------|
+| Describe commit | `jj desc -m "message"` |
+| View status | `jj st` |
+| View log | `jj log` |
+| View diff | `jj diff` |
+| New commit | `jj st` then `jj new` only if `@` has changes, then `jj desc -m "message"` |
+| Edit commit | `jj edit <id>` |
+| Squash to parent | `jj squash` |
+| Auto-distribute | `jj absorb` |
+| Abandon commit | `jj abandon <id>` |
+| Undo last operation | `jj undo` |
+| Restore files | `jj restore [paths]` |
+| Create bookmark | `jj bookmark create <name>` |
+| Push bookmark | `jj git push -b <name>` |
+
+## Best Practices Summary
+
+1. **Describe first**: Set the commit message before coding
+2. **One change per commit**: Keep commits atomic and focused
+3. **Use change IDs**: They're stable across rewrites
+4. **Refine commits**: Leverage mutability for clean history
+5. **Embrace the workflow**: No staging area, no stashing - just commits
+
